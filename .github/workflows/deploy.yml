@@ -1,0 +1,45 @@
+name: api.whatsappweb
+
+on:
+    push:
+        branches: 
+            - master
+    pull_request: 
+        branches: 
+            - master
+
+    workflow_dispatch: 
+
+jobs:
+
+    build:
+        runs-on: local-zabbix
+        steps:
+        - uses: actions/checkout@v3
+        - name: Build the Docker image
+          run: 
+            docker build -t api_zap_image .
+    
+    parando_imagem:
+        needs: build
+        runs-on: local-zabbix
+        steps:
+        - name: Parando a imagem
+          run: docker rm -f api_zap
+        
+    iniciando_imagem:
+        needs: parando_imagem
+        runs-on: local-zabbix
+        steps:
+        - name: Iniciando imagem
+          run:
+            docker run -p 5000:5000 -itd --name api_zap api_zap_image
+    
+    removendo_imagens:
+        needs: 
+        - iniciando_imagem
+        runs-on: local-zabbix
+        steps: 
+        - name:
+          run:
+            docker image prune -f
