@@ -1,0 +1,14 @@
+/venv
+/build
+/dist
+/__pycache__
+/app/__pycache__
+/app/profiles/*
+/app/static/img/*
+/app/__pycache__
+/app/controllers/__pycache__
+*.rar
+*.spec
+*.log
+teste*
+app/utils/token.py
