@@ -73,6 +73,23 @@ class ConexaoZap():
             max_time = self.TIME_MAX_WAIT
         return WebDriverWait(self.driver, max_time).until(
             EC.visibility_of_element_located(selector))
+    
+    def write_text(self,texto):
+        ENTER = '\uE007'    # Codigo referente ao enter do teclado
+        DELETE = '\uE017'
+        CONTROL = '\uE009'
+        try:
+            ### Realizando loop para escrever letra a letra no zap
+            text_input = self.wait_visible_element((By.XPATH, self.CLASSE_TEXT_GROUP))
+            for c in texto:
+                if len(c) > 1:
+                    c = c.lower()
+                text_input.send_keys(c)
+            
+            text_input.send_keys(ENTER)
+            return True                       
+        except:
+            return False
 
     def connect_whatsapp(self):
         self.driver.get(self.WHATSAPP_URL)
@@ -94,34 +111,19 @@ class ConexaoZap():
         
     def envio_mesagem(self,numero,texto):
         ### Acessando o Contato para envio da mensagem
-        url = fr'{self.WHATSAPP_URL}/send?phone={numero}&text={texto}'
+        url = fr'{self.WHATSAPP_URL}/send?phone={numero}'
         self.driver.get(url)
         #sleep(15)
-        try:
-            send_msg = self.wait_visible_element((By.XPATH,self.CLASSE_SEND))
-            send_msg.click
-            return True                        
-        except:
-            return False
-        
+        write_msg = self.write_text(texto)
+        return write_msg
+    
     def envio_mesagem_grupo(self,id_grupo,texto):
         ### Acessando o Grupo para envio da mensagem
         url = fr'{self.WHATSAPP_URL}/accept?code={id_grupo}'
         self.driver.get(url)
         #sleep(10)
-        try:
-            ### Realizando loop para escrever letra a letra no zap
-            text_group_input = self.wait_visible_element((By.XPATH, self.CLASSE_TEXT_GROUP))
-            for c in texto:
-                if len(c) > 1:
-                    c = c.lower()
-                #self.driver.find_element(By.XPATH,'/html/body/div[1]/div/div[2]/div[4]/div/footer/div[1]/div/span[2]/div/div[2]/div[1]/div/div').send_keys(c)
-                text_group_input.send_keys(c)
-            #self.driver.find_element(By.XPATH,'/html/body/div[1]/div/div[2]/div[4]/div/footer/div[1]/div/span[2]/div/div[2]/div[2]/button').click()
-            self.wait_visible_element((By.XPATH, self.CLASSE_SEND)).click()
-            return True
-        except:
-            return False
+        write_msg_group = self.write_text(texto)
+        return write_msg_group
 
     @staticmethod
     def initializer_driver():
