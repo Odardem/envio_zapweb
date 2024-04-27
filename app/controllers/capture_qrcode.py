@@ -9,16 +9,16 @@ from selenium.webdriver.common.by import By
 from selenium.webdriver.support.wait import WebDriverWait
 from selenium.common.exceptions import NoSuchElementException
 from PIL import Image
-from token import TOKEN
+from .token import *
 import os
 import qrcode
 import platform
 
-plataforma = platform.system()
+plataforma = platform.system().lower()
 
 WHATSAPP = r'https://web.whatsapp.com'
-CLASSE_QRCODE = "_19vUU"
-if plataforma == "Windows":
+CLASSE_QRCODE = "/html/body/div[2]/div/div/div[2]/div[3]/div[1]/div/div/div[2]/div/canvas"
+if plataforma == "windows":
     #os.op
     ARQUIVO_QRCODE =  r'app\static\img\qrcode.png'
 elif  plataforma == "Linux":
@@ -48,8 +48,10 @@ os.environ['GH_TOKEN'] = TOKEN
         return driver'''
     
 class ConexaoZap():
-    def __init__(self, driver):
-        self.driver = driver 
+    def __init__(self, driver=None):
+        if driver is not None:
+            self.driver = driver
+        self.driver = self.initializer_driver() 
         self.driver.get(WHATSAPP)
     
     def connect_whatsapp(self):
@@ -59,10 +61,13 @@ class ConexaoZap():
 
         try:
             ### Extraindo QRCODE para realização de login
-            extrair_qrcode = self.driver.find_element(By.CLASS_NAME, CLASSE_QRCODE)
-            gerar_qrcode = qrcode.make(extrair_qrcode.get_attribute('data-ref'))
+            extrair_qrcode = self.driver.find_element(By.XPATH, CLASSE_QRCODE)
+            valor = extrair_qrcode.screenshot_as_png
+            with open(ARQUIVO_QRCODE, "wb") as file:
+                file.write(valor)
+            '''gerar_qrcode = qrcode.make(extrair_qrcode.get_attribute('data-ref'))
             gerar_qrcode.save(ARQUIVO_QRCODE)
-            save_qrcode = Image.open(ARQUIVO_QRCODE)
+            save_qrcode = Image.open(ARQUIVO_QRCODE)'''
             return True
         except:
             return False
@@ -94,20 +99,21 @@ class ConexaoZap():
         except:
             return False
 
-    '''def check_connecion(self.driver=driver, url=url):
-        while True:
-            driver.get(url)
-            sleep(15)
-            try:
-                verificar_login = driver.find_element(By.CLASS_NAME,'_2Ts6i _3RGKj')
-                print(verificar_login)
-                break
-            except(Exception,NoSuchElementException):
-                extrair_qrcode = driver.find_element(By.CLASS_NAME, CLASSE_QRCODE)
-                gerar_qrcode = qrcode.make(extrair_qrcode.get_attribute('data-ref'))
-                gerar_qrcode.save(ARQUIVO_QRCODE)
-                save_qrcode = Image.open(ARQUIVO_QRCODE)
-                sleep(15)'''
+    @staticmethod
+    def initializer_driver():
+
+        option = Options()
+        if plataforma == "windows" or plataforma == "linux":
+            #option.add_argument('-headless')
+            option.add_argument("-profile")
+            profile = os.path.join(os.getcwd(),'app','profiles')
+            option.add_argument(profile)
+            servico =  FirefoxService(GeckoDriverManager().install())
+            driver = webdriver.Firefox(service=servico,options=option)
+            return driver
+        else:
+            raise OSError("Sistema operacional não suportado para inicializar o driver.")
+        
 
 if __name__ == "__main__":
 
