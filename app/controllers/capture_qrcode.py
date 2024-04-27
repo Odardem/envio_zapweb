@@ -8,6 +8,7 @@ from datetime import datetime
 from selenium.webdriver.common.by import By
 from selenium.webdriver.support.wait import WebDriverWait
 from selenium.common.exceptions import NoSuchElementException
+from selenium.webdriver.support import expected_conditions as EC
 from PIL import Image
 from .token import *
 import os
@@ -16,8 +17,8 @@ import platform
 
 plataforma = platform.system().lower()
 
-WHATSAPP = r'https://web.whatsapp.com'
-CLASSE_QRCODE = "/html/body/div[2]/div/div/div[2]/div[3]/div[1]/div/div/div[2]/div/canvas"
+
+
 if plataforma == "windows":
     #os.op
     ARQUIVO_QRCODE =  r'app\static\img\qrcode.png'
@@ -48,20 +49,39 @@ os.environ['GH_TOKEN'] = TOKEN
         return driver'''
     
 class ConexaoZap():
+    WHATSAPP_URL = r'https://web.whatsapp.com'
+    CLASSE_QRCODE = "//canvas[@aria-label='Scan me!']"
+    CLASSE_SEND = '//button[@aria-label="Enviar"]'
+    CLASSE_TEXT_GROUP = '//div[@title="Digite uma mensagem"]'
+    TIME_MAX_WAIT = 30
+     
     def __init__(self, driver=None):
         if driver is not None:
             self.driver = driver
         self.driver = self.initializer_driver() 
-        self.driver.get(WHATSAPP)
+        self.driver.get(self.WHATSAPP_URL)
     
+    def wait_for_element(self, selector,max_time=None):
+        if max_time is None:
+            max_time = self.TIME_MAX_WAIT
+        return WebDriverWait(self.driver, max_time).until(
+            EC.presence_of_element_located(selector)
+        )
+    
+    def wait_visible_element(self,selector,max_time=None):
+        if max_time is None:
+            max_time = self.TIME_MAX_WAIT
+        return WebDriverWait(self.driver, max_time).until(
+            EC.visibility_of_element_located(selector))
+
     def connect_whatsapp(self):
-        ### Conectando ao Wathsapp
-        self.driver.get(WHATSAPP)
-        sleep(10)
+        self.driver.get(self.WHATSAPP_URL)
+        #sleep(10)
 
         try:
             ### Extraindo QRCODE para realização de login
-            extrair_qrcode = self.driver.find_element(By.XPATH, CLASSE_QRCODE)
+            #extrair_qrcode = self.driver.find_element(By.XPATH, CLASSE_QRCODE)
+            extrair_qrcode = self.wait_for_element((By.XPATH, self.CLASSE_QRCODE))
             valor = extrair_qrcode.screenshot_as_png
             with open(ARQUIVO_QRCODE, "wb") as file:
                 file.write(valor)
@@ -74,27 +94,31 @@ class ConexaoZap():
         
     def envio_mesagem(self,numero,texto):
         ### Acessando o Contato para envio da mensagem
-        url = fr'https://web.whatsapp.com/send?phone={numero}&text={texto}'
+        url = fr'{self.WHATSAPP_URL}/send?phone={numero}&text={texto}'
         self.driver.get(url)
-        sleep(10)
+        #sleep(15)
         try:
-            self.driver.find_element(By.XPATH,'/html/body/div[1]/div/div[2]/div[4]/div/footer/div[1]/div/span[2]/div/div[2]/div[2]/button').click()
-            return True
+            send_msg = self.wait_visible_element((By.XPATH,self.CLASSE_SEND))
+            send_msg.click
+            return True                        
         except:
             return False
         
     def envio_mesagem_grupo(self,id_grupo,texto):
         ### Acessando o Grupo para envio da mensagem
-        url = fr'https://web.whatsapp.com/accept?code={id_grupo}'
+        url = fr'{self.WHATSAPP_URL}/accept?code={id_grupo}'
         self.driver.get(url)
-        sleep(10)
+        #sleep(10)
         try:
             ### Realizando loop para escrever letra a letra no zap
+            text_group_input = self.wait_visible_element((By.XPATH, self.CLASSE_TEXT_GROUP))
             for c in texto:
                 if len(c) > 1:
                     c = c.lower()
-                self.driver.find_element(By.XPATH,'/html/body/div[1]/div/div[2]/div[4]/div/footer/div[1]/div/span[2]/div/div[2]/div[1]/div/div').send_keys(c)
-            self.driver.find_element(By.XPATH,'/html/body/div[1]/div/div[2]/div[4]/div/footer/div[1]/div/span[2]/div/div[2]/div[2]/button').click()
+                #self.driver.find_element(By.XPATH,'/html/body/div[1]/div/div[2]/div[4]/div/footer/div[1]/div/span[2]/div/div[2]/div[1]/div/div').send_keys(c)
+                text_group_input.send_keys(c)
+            #self.driver.find_element(By.XPATH,'/html/body/div[1]/div/div[2]/div[4]/div/footer/div[1]/div/span[2]/div/div[2]/div[2]/button').click()
+            self.wait_visible_element((By.XPATH, self.CLASSE_SEND)).click()
             return True
         except:
             return False
