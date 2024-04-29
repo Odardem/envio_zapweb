@@ -28,26 +28,7 @@ elif  plataforma == "Linux":
 
 
 os.environ['GH_TOKEN'] = TOKEN
-'''class Driver():
-    
-    def drive(usuario=None):   
-        
-        servico = FirefoxService(GeckoDriverManager().install())
-        url = WHATSAPP
-        option = Options()
-        
-        if usuario != None:
-            option.add_argument("-profile")
-            option.add_argument(usuario)
-            driver = webdriver.Firefox(service=servico,options=option)
-        else:
-            teste = r'.\app\profiles'
-            option.add_argument("-profile")
-            option.add_argument(teste)
-            driver = webdriver.Firefox(service=servico,options=option)
-        
-        return driver'''
-    
+
 class ConexaoZap():
     WHATSAPP_URL = r'https://web.whatsapp.com'
     CLASSE_QRCODE = "//canvas[@aria-label='Scan me!']"
@@ -97,14 +78,10 @@ class ConexaoZap():
 
         try:
             ### Extraindo QRCODE para realização de login
-            #extrair_qrcode = self.driver.find_element(By.XPATH, CLASSE_QRCODE)
             extrair_qrcode = self.wait_for_element((By.XPATH, self.CLASSE_QRCODE))
             valor = extrair_qrcode.screenshot_as_png
             with open(ARQUIVO_QRCODE, "wb") as file:
                 file.write(valor)
-            '''gerar_qrcode = qrcode.make(extrair_qrcode.get_attribute('data-ref'))
-            gerar_qrcode.save(ARQUIVO_QRCODE)
-            save_qrcode = Image.open(ARQUIVO_QRCODE)'''
             return True
         except:
             return False
@@ -130,7 +107,7 @@ class ConexaoZap():
 
         option = Options()
         if plataforma == "windows" or plataforma == "linux":
-            #option.add_argument('-headless')
+            option.add_argument('-headless')
             option.add_argument("-profile")
             profile = os.path.join(os.getcwd(),'app','profiles')
             option.add_argument(profile)
