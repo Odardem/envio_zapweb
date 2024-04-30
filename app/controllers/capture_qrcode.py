@@ -89,12 +89,16 @@ class ConexaoZap():
     def initializer_driver():
 
         option = Options()
-        if plataforma == "windows" or plataforma == "linux":
-            #option.add_argument('-headless')
-            option.add_argument("-profile")
-            profile = os.path.join(os.getcwd(),'app','profiles')
-            option.add_argument(profile)
+        option.add_argument('-headless')
+        option.add_argument("-profile")
+        profile = os.path.join(os.getcwd(),'app','profiles')
+        option.add_argument(profile)
+        if plataforma == "windows":
             servico =  FirefoxService(GeckoDriverManager().install())
+            driver = webdriver.Firefox(service=servico,options=option)
+            return driver
+        elif plataforma == "linux":
+            servico =  FirefoxService(executable_path=GeckoDriverManager().install())
             driver = webdriver.Firefox(service=servico,options=option)
             return driver
         else:

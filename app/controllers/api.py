@@ -2,7 +2,6 @@ from flask import render_template, request
 from app import app
 from .capture_qrcode import ConexaoZap
 
-
 driver = ConexaoZap() 
 
 @app.route("/login")
