@@ -21,6 +21,7 @@ class ConexaoZap():
     CLASSE_TEXT_GROUP = '//div[@title="Digite uma mensagem"]'
     TIME_MAX_WAIT = 30
     ARQUIVO_QRCODE =  os.path.join(os.getcwd(),'app','static','img','qrcode.png')
+    
      
     def __init__(self, driver=None):
         if driver is not None:
@@ -63,6 +64,7 @@ class ConexaoZap():
             ### Extraindo QRCODE para realização de login
             extrair_qrcode = self.wait_for_element((By.XPATH, self.CLASSE_QRCODE))
             valor = extrair_qrcode.screenshot_as_png
+            print(self.ARQUIVO_QRCODE)
             with open(self.ARQUIVO_QRCODE, "wb") as file:
                 file.write(valor)
             return True
@@ -87,7 +89,6 @@ class ConexaoZap():
 
     @staticmethod
     def initializer_driver():
-
         option = Options()
         option.add_argument('-headless')
         option.add_argument("-profile")
