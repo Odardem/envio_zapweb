@@ -75,7 +75,6 @@ class ConexaoZap():
         ### Acessando o Contato para envio da mensagem
         url = fr'{self.WHATSAPP_URL}/send?phone={numero}'
         self.driver.get(url)
-        #sleep(15)
         write_msg = self.write_text(texto)
         return write_msg
     
@@ -83,7 +82,6 @@ class ConexaoZap():
         ### Acessando o Grupo para envio da mensagem
         url = fr'{self.WHATSAPP_URL}/accept?code={id_grupo}'
         self.driver.get(url)
-        #sleep(10)
         write_msg_group = self.write_text(texto)
         return write_msg_group
 
