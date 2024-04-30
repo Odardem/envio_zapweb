@@ -14,7 +14,6 @@ def login():
     else:
         return "erro"
 
-
 @app.route("/")
 def index():
     return render_template('index.html')
