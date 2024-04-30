@@ -12,12 +12,6 @@ from .token import *
 
 plataforma = platform.system().lower()
 
-if plataforma == "windows":
-    #os.op
-    ARQUIVO_QRCODE =  r'app\static\img\qrcode.png'
-elif  plataforma == "Linux":
-    ARQUIVO_QRCODE =  r'app/static/img/qrcode.png'
-
 os.environ['GH_TOKEN'] = TOKEN
 
 class ConexaoZap():
@@ -26,7 +20,8 @@ class ConexaoZap():
     CLASSE_SEND = '//button[@aria-label="Enviar"]'
     CLASSE_TEXT_GROUP = '//div[@title="Digite uma mensagem"]'
     TIME_MAX_WAIT = 30
-    ARQUIVO_QRCODE = os.path.join(os.getcwd(),'app', 'static', 'img', 'qrcode.png')
+    ARQUIVO_QRCODE =  os.path.join(os.getcwd(),'app','static','img','qrcode.png')
+     
     def __init__(self, driver=None):
         if driver is not None:
             self.driver = driver
@@ -57,21 +52,18 @@ class ConexaoZap():
                 if len(c) > 1:
                     c = c.lower()
                 text_input.send_keys(c)
-            
             text_input.send_keys(ENTER)
             return True                       
         except:
             return False
-
+    
     def connect_whatsapp(self):
         self.driver.get(self.WHATSAPP_URL)
-        #sleep(10)
-
         try:
             ### Extraindo QRCODE para realização de login
             extrair_qrcode = self.wait_for_element((By.XPATH, self.CLASSE_QRCODE))
             valor = extrair_qrcode.screenshot_as_png
-            with open(ARQUIVO_QRCODE, "wb") as file:
+            with open(self.ARQUIVO_QRCODE, "wb") as file:
                 file.write(valor)
             return True
         except:

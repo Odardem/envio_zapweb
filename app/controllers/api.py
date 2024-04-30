@@ -1,7 +1,6 @@
 from flask import render_template, request
 from app import app
 from .capture_qrcode import ConexaoZap
-#app = Flask(__name__)
 
 driver = ConexaoZap() 
 
