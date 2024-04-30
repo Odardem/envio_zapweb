@@ -1,34 +1,9 @@
 from flask import render_template, request
-
 from app import app
 from .capture_qrcode import ConexaoZap
-#app = Flask(__name__)
-#WHATSAPP_URL = r'https://web.whatsapp.com'
 
-'''plataforma = platform.system().lower()
-url = WHATSAPP_URL
-'''
 
 driver = ConexaoZap() 
-
-'''if plataforma == "windows":
-        teste = r'.\app\profiles'
-        option.add_argument('-headless')
-        option.add_argument("-profile")
-        option.add_argument(teste)
-        servico =  FirefoxService(GeckoDriverManager().install())
-        driver = ConexaoZap(webdriver.Firefox(service=servico,options=option))
-    elif  plataforma == "linux":
-        teste = r'app/profiles'
-        option.add_argument('-headless')
-        option.set_preference('-profile', teste)
-        servico =  FirefoxService(executable_path=GeckoDriverManager().install())
-        driver = ConexaoZap(webdriver.Firefox(service=servico,options=option))
-        
-    else:
-        print("erro")
-
-    print(driver_local_teste)'''
 
 @app.route("/login")
 def login():
@@ -38,7 +13,7 @@ def login():
        return render_template('index.html')
     else:
         return "erro"
-    #return render_template('index.html')
+
 
 @app.route("/")
 def index():
