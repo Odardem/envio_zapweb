@@ -12,3 +12,4 @@
 *.log
 teste*
 app/controllers/token.py
+/app/utils/__pycache__
