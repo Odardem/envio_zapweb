@@ -11,4 +11,4 @@
 *.spec
 *.log
 teste*
-app/utils/token.py
+app/controllers/token.py

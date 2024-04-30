@@ -2,112 +2,104 @@ from selenium.webdriver.firefox.service import Service as FirefoxService
 from selenium import webdriver
 from selenium.webdriver.firefox.options import Options
 from webdriver_manager.firefox import GeckoDriverManager
-from bs4 import BeautifulSoup
-from time import sleep
-from datetime import datetime
 from selenium.webdriver.common.by import By
 from selenium.webdriver.support.wait import WebDriverWait
 from selenium.common.exceptions import NoSuchElementException
-from PIL import Image
-from token import TOKEN
+from selenium.webdriver.support import expected_conditions as EC
 import os
-import qrcode
 import platform
+from .token import *
 
-plataforma = platform.system()
-
-WHATSAPP = r'https://web.whatsapp.com'
-CLASSE_QRCODE = "_19vUU"
-if plataforma == "Windows":
-    #os.op
-    ARQUIVO_QRCODE =  r'app\static\img\qrcode.png'
-elif  plataforma == "Linux":
-    ARQUIVO_QRCODE =  r'app/static/img/qrcode.png'
-
-
+plataforma = platform.system().lower()
 
 os.environ['GH_TOKEN'] = TOKEN
-'''class Driver():
-    
-    def drive(usuario=None):   
-        
-        servico = FirefoxService(GeckoDriverManager().install())
-        url = WHATSAPP
-        option = Options()
-        
-        if usuario != None:
-            option.add_argument("-profile")
-            option.add_argument(usuario)
-            driver = webdriver.Firefox(service=servico,options=option)
-        else:
-            teste = r'.\app\profiles'
-            option.add_argument("-profile")
-            option.add_argument(teste)
-            driver = webdriver.Firefox(service=servico,options=option)
-        
-        return driver'''
-    
+
 class ConexaoZap():
-    def __init__(self, driver):
-        self.driver = driver 
-        self.driver.get(WHATSAPP)
+    WHATSAPP_URL = r'https://web.whatsapp.com'
+    CLASSE_QRCODE = "//canvas[@aria-label='Scan me!']"
+    CLASSE_SEND = '//button[@aria-label="Enviar"]'
+    CLASSE_TEXT_GROUP = '//div[@title="Digite uma mensagem"]'
+    TIME_MAX_WAIT = 30
+    ARQUIVO_QRCODE =  os.path.join(os.getcwd(),'app','static','img','qrcode.png')
+     
+    def __init__(self, driver=None):
+        if driver is not None:
+            self.driver = driver
+        self.driver = self.initializer_driver() 
+        self.driver.get(self.WHATSAPP_URL)
+    
+    def wait_for_element(self, selector,max_time=None):
+        if max_time is None:
+            max_time = self.TIME_MAX_WAIT
+        return WebDriverWait(self.driver, max_time).until(
+            EC.presence_of_element_located(selector)
+        )
+    
+    def wait_visible_element(self,selector,max_time=None):
+        if max_time is None:
+            max_time = self.TIME_MAX_WAIT
+        return WebDriverWait(self.driver, max_time).until(
+            EC.visibility_of_element_located(selector))
+    
+    def write_text(self,texto):
+        ENTER = '\uE007'    # Codigo referente ao enter do teclado
+        DELETE = '\uE017'
+        CONTROL = '\uE009'
+        try:
+            ### Realizando loop para escrever letra a letra no zap
+            text_input = self.wait_visible_element((By.XPATH, self.CLASSE_TEXT_GROUP))
+            for c in texto:
+                if len(c) > 1:
+                    c = c.lower()
+                text_input.send_keys(c)
+            text_input.send_keys(ENTER)
+            return True                       
+        except:
+            return False
     
     def connect_whatsapp(self):
-        ### Conectando ao Wathsapp
-        self.driver.get(WHATSAPP)
-        sleep(10)
-
+        self.driver.get(self.WHATSAPP_URL)
         try:
             ### Extraindo QRCODE para realização de login
-            extrair_qrcode = self.driver.find_element(By.CLASS_NAME, CLASSE_QRCODE)
-            gerar_qrcode = qrcode.make(extrair_qrcode.get_attribute('data-ref'))
-            gerar_qrcode.save(ARQUIVO_QRCODE)
-            save_qrcode = Image.open(ARQUIVO_QRCODE)
+            extrair_qrcode = self.wait_for_element((By.XPATH, self.CLASSE_QRCODE))
+            valor = extrair_qrcode.screenshot_as_png
+            with open(self.ARQUIVO_QRCODE, "wb") as file:
+                file.write(valor)
             return True
         except:
             return False
         
     def envio_mesagem(self,numero,texto):
         ### Acessando o Contato para envio da mensagem
-        url = fr'https://web.whatsapp.com/send?phone={numero}&text={texto}'
+        url = fr'{self.WHATSAPP_URL}/send?phone={numero}'
         self.driver.get(url)
-        sleep(10)
-        try:
-            self.driver.find_element(By.XPATH,'/html/body/div[1]/div/div[2]/div[4]/div/footer/div[1]/div/span[2]/div/div[2]/div[2]/button').click()
-            return True
-        except:
-            return False
-        
+        #sleep(15)
+        write_msg = self.write_text(texto)
+        return write_msg
+    
     def envio_mesagem_grupo(self,id_grupo,texto):
         ### Acessando o Grupo para envio da mensagem
-        url = fr'https://web.whatsapp.com/accept?code={id_grupo}'
+        url = fr'{self.WHATSAPP_URL}/accept?code={id_grupo}'
         self.driver.get(url)
-        sleep(10)
-        try:
-            ### Realizando loop para escrever letra a letra no zap
-            for c in texto:
-                if len(c) > 1:
-                    c = c.lower()
-                self.driver.find_element(By.XPATH,'/html/body/div[1]/div/div[2]/div[4]/div/footer/div[1]/div/span[2]/div/div[2]/div[1]/div/div').send_keys(c)
-            self.driver.find_element(By.XPATH,'/html/body/div[1]/div/div[2]/div[4]/div/footer/div[1]/div/span[2]/div/div[2]/div[2]/button').click()
-            return True
-        except:
-            return False
+        #sleep(10)
+        write_msg_group = self.write_text(texto)
+        return write_msg_group
 
-    '''def check_connecion(self.driver=driver, url=url):
-        while True:
-            driver.get(url)
-            sleep(15)
-            try:
-                verificar_login = driver.find_element(By.CLASS_NAME,'_2Ts6i _3RGKj')
-                print(verificar_login)
-                break
-            except(Exception,NoSuchElementException):
-                extrair_qrcode = driver.find_element(By.CLASS_NAME, CLASSE_QRCODE)
-                gerar_qrcode = qrcode.make(extrair_qrcode.get_attribute('data-ref'))
-                gerar_qrcode.save(ARQUIVO_QRCODE)
-                save_qrcode = Image.open(ARQUIVO_QRCODE)
-                sleep(15)'''
+    @staticmethod
+    def initializer_driver():
+
+        option = Options()
+        if plataforma == "windows" or plataforma == "linux":
+            #option.add_argument('-headless')
+            option.add_argument("-profile")
+            profile = os.path.join(os.getcwd(),'app','profiles')
+            option.add_argument(profile)
+            servico =  FirefoxService(GeckoDriverManager().install())
+            driver = webdriver.Firefox(service=servico,options=option)
+            return driver
+        else:
+            raise OSError("Sistema operacional não suportado para inicializar o driver.")
+        
 
 if __name__ == "__main__":
 
