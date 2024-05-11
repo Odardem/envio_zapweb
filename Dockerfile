@@ -15,8 +15,9 @@ RUN pip3 install --no-cache --upgrade pip setuptools
 RUN pip3 install -r /whats/requirements.txt
 EXPOSE 5000/tcp
 WORKDIR /whats
-ENV C_FORCE_ROOT="true"
-ENV CELERY_BROKER_URL="redis://redis:6379/0"
-ENV CELERY_RESULT_BACKEND="redis://redis:6379/0"
+CMD waitress-serve --host=* --port=5000 --no-ipv6 app:app
+#ENV C_FORCE_ROOT="true"
+#ENV CELERY_BROKER_URL="redis://redis:6379/0"
+#ENV CELERY_RESULT_BACKEND="redis://redis:6379/0"
 
-CMD celery -A tasks worker --loglevel=info & waitress-serve --host=* --port=5000 --no-ipv6 app:app
+#CMD celery -A tasks worker --loglevel=info & waitress-serve --host=* --port=5000 --no-ipv6 app:app
