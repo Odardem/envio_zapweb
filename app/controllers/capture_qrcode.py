@@ -16,9 +16,11 @@ os.environ['GH_TOKEN'] = TOKEN
 
 class ConexaoZap():
     WHATSAPP_URL = r'https://web.whatsapp.com'
-    CLASSE_QRCODE = "//canvas[@aria-label='Scan me!']"
-    CLASSE_SEND = '//button[@aria-label="Enviar"]'
-    CLASSE_TEXT_GROUP = '//div[@title="Digite uma mensagem"]'
+    CLASSE_QRCODE = "//canvas[@*='Scan me!']"
+    CLASSE_SEND = '//button[@*="Enviar"]'
+    CLASSE_TEXT_GROUP = '//div[@*="Digite uma mensagem"]'
+    
+
     TIME_MAX_WAIT = 30
     ARQUIVO_QRCODE =  os.path.join(os.getcwd(),'app','static','img','qrcode.png')
     
@@ -88,7 +90,7 @@ class ConexaoZap():
     @staticmethod
     def initializer_driver():
         option = Options()
-        option.add_argument('-headless')
+        #option.add_argument('-headless')
         option.add_argument("-profile")
         profile = os.path.join(os.getcwd(),'app','profiles')
         option.add_argument(profile)

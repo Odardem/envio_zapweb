@@ -40,16 +40,20 @@ def envio_json(usuario):
         text = request_mensagem['message']
         print(f'Enviando mensagem para o numero:{numero}')
         if driver.envio_mesagem(numero,text):
-             return "Mensagem Enviada"
+            print(f'Mensagem para o numero: {numero} ### Enviado com sucesso ###')
+            return "Mensagem Enviada"
         else:
+            print(f'Mensagem para o numero: {numero} ##### Falhou #####')
             return "Mensagem não enviada"
     elif 'grupo' in request_mensagem.keys() and "message" in request_mensagem.keys():
         grupo = request_mensagem['grupo']
         text = request_mensagem['message']
         print(f'Enviando mensagem para o grupo: {grupo}')
         if driver.envio_mesagem_grupo(grupo,text):
+            print(f'Mensagem para o grupo: {grupo} ### Enviado com sucesso ###')
             return "Mensagem Enviada"
         else:
+            print(f'Mensagem para o grupo: {grupo} ##### Falhou #####')
             return "Mensagem não enviada"
 
     return "Mensagem não enviada"
