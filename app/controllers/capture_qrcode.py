@@ -96,7 +96,7 @@ class ConexaoZap():
     @staticmethod
     def initializer_driver():
         option = Options()
-        #option.add_argument('-headless')
+        option.add_argument('-headless')
         option.add_argument("-profile")
         profile = os.path.join(os.getcwd(),'app','profiles')
         option.add_argument(profile)
