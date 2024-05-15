@@ -19,8 +19,6 @@ class ConexaoZap():
     CLASSE_QRCODE = "//canvas[@*='Scan me!']"
     CLASSE_SEND = '//button[@*="Enviar"]'
     CLASSE_TEXT_GROUP = '//div[@*="Digite uma mensagem"]'
-    
-
     TIME_MAX_WAIT = 30
     ARQUIVO_QRCODE =  os.path.join(os.getcwd(),'app','static','img','qrcode.png')
     
@@ -44,6 +42,12 @@ class ConexaoZap():
         return WebDriverWait(self.driver, max_time).until(
             EC.visibility_of_element_located(selector))
     
+    def wait_for_clickable_element(self, selector,max_time=None):
+        if max_time is None:
+            max_time = self.TIME_MAX_WAIT
+        return WebDriverWait(self.driver, max_time).until(
+            EC.element_to_be_clickable(selector)
+        )
     def write_text(self,texto):
         ENTER = '\uE007'    # Codigo referente ao enter do teclado
         DELETE = '\uE017'
@@ -55,7 +59,9 @@ class ConexaoZap():
                 if len(c) > 1:
                     c = c.lower()
                 text_input.send_keys(c)
-            text_input.send_keys(ENTER)
+            #text_input.send_keys(ENTER)
+            send_button = self.wait_for_clickable_element((By.XPATH, self.CLASSE_SEND))
+            send_button.click()
             return True                       
         except:
             return False
@@ -90,7 +96,7 @@ class ConexaoZap():
     @staticmethod
     def initializer_driver():
         option = Options()
-        option.add_argument('-headless')
+        #option.add_argument('-headless')
         option.add_argument("-profile")
         profile = os.path.join(os.getcwd(),'app','profiles')
         option.add_argument(profile)
