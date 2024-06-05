@@ -9,6 +9,7 @@ from selenium.webdriver.support import expected_conditions as EC
 import os
 import platform
 from .token import *
+from time import sleep
 
 plataforma = platform.system().lower()
 
@@ -19,6 +20,9 @@ class ConexaoZap():
     CLASSE_QRCODE = "//canvas[@*='Scan me!']"
     CLASSE_SEND = '//button[@*="Enviar"]'
     CLASSE_TEXT_GROUP = '//div[@*="Digite uma mensagem"]'
+    CLASSE_ATTACH_MENU = '//div[@*="Anexar"]'
+    ATTACH_ARCHIVE = '//input[@*="file"]'
+    SEND_ARCHIVE = '//span[@*="send"]'
     TIME_MAX_WAIT = 30
     ARQUIVO_QRCODE =  os.path.join(os.getcwd(),'app','static','img','qrcode.png')
     
@@ -48,6 +52,7 @@ class ConexaoZap():
         return WebDriverWait(self.driver, max_time).until(
             EC.element_to_be_clickable(selector)
         )
+    
     def write_text(self,texto):
         ENTER = '\uE007'    # Codigo referente ao enter do teclado
         DELETE = '\uE017'
@@ -65,7 +70,23 @@ class ConexaoZap():
             return True                       
         except:
             return False
-    
+        
+    def send_archive(self,file,numero):
+        try:
+            url = fr'{self.WHATSAPP_URL}/send?phone={numero}'
+            self.driver.get(url)
+            menu_input_archive = self.wait_for_clickable_element((By.XPATH,self.CLASSE_ATTACH_MENU))
+            sleep(5)
+            menu_input_archive.click()
+            input_archive = self.wait_for_element((By.XPATH,self.ATTACH_ARCHIVE))
+            input_archive.send_keys(file)
+            send_button = self.wait_for_clickable_element((By.XPATH, self.SEND_ARCHIVE))
+            send_button.click()
+            return True
+        except Exception as err:
+            print(f'Deu erro {err}')
+            return False
+
     def connect_whatsapp(self):
         self.driver.get(self.WHATSAPP_URL)
         try:
