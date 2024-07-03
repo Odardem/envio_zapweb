@@ -13,7 +13,7 @@ from time import sleep
 
 plataforma = platform.system().lower()
 
-os.environ['GH_TOKEN'] = TOKEN
+#os.environ['GH_TOKEN'] = TOKEN
 
 class ConexaoZap():
     WHATSAPP_URL = r'https://web.whatsapp.com'
@@ -71,9 +71,25 @@ class ConexaoZap():
         except:
             return False
         
-    def send_archive(self,file,numero):
+    def send_archive_numero(self,file,numero):
         try:
             url = fr'{self.WHATSAPP_URL}/send?phone={numero}'
+            self.driver.get(url)
+            menu_input_archive = self.wait_for_clickable_element((By.XPATH,self.CLASSE_ATTACH_MENU))
+            sleep(5)
+            menu_input_archive.click()
+            input_archive = self.wait_for_element((By.XPATH,self.ATTACH_ARCHIVE))
+            input_archive.send_keys(file)
+            send_button = self.wait_for_clickable_element((By.XPATH, self.SEND_ARCHIVE))
+            send_button.click()
+            return True
+        except Exception as err:
+            print(f'Deu erro {err}')
+            return False
+    
+    def send_archive_group(self,file,id_grupo):
+        try:
+            url = fr'{self.WHATSAPP_URL}/accept?code={id_grupo}'
             self.driver.get(url)
             menu_input_archive = self.wait_for_clickable_element((By.XPATH,self.CLASSE_ATTACH_MENU))
             sleep(5)
