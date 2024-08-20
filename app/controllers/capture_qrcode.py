@@ -6,6 +6,8 @@ from selenium.webdriver.common.by import By
 from selenium.webdriver.support.wait import WebDriverWait
 from selenium.common.exceptions import NoSuchElementException
 from selenium.webdriver.support import expected_conditions as EC
+from collections import deque
+from threading import Thread
 import os
 import platform
 from .token import *
@@ -24,14 +26,18 @@ class ConexaoZap():
     ATTACH_ARCHIVE = '//input[@*="file"]'
     SEND_ARCHIVE = '//span[@*="send"]'
     TIME_MAX_WAIT = 30
-    ARQUIVO_QRCODE =  os.path.join(os.getcwd(),'app','static','img','qrcode.png')
     
+    fila = deque()
+
      
-    def __init__(self, driver=None):
+    def __init__(self, user, driver=None):
         if driver is not None:
             self.driver = driver
-        self.driver = self.initializer_driver() 
+        self.user = user
+        self.driver = self.initializer_driver(self.user) 
         self.driver.get(self.WHATSAPP_URL)
+        #paralelismo = Thread(target=self.check_fila(self.fila))
+        #paralelismo.start()
     
     def wait_for_element(self, selector,max_time=None):
         if max_time is None:
@@ -103,14 +109,18 @@ class ConexaoZap():
             print(f'Deu erro {err}')
             return False
 
-    def connect_whatsapp(self):
+    def connect_whatsapp(self, archive=None):
+        if archive is None:
+            ARQUIVO_QRCODE =  os.path.join(os.getcwd(),'app','static','img','qrcode.png')
+        else:
+            ARQUIVO_QRCODE =  os.path.join(os.getcwd(),'app','static','img',archive,'qrcode.png')
         self.driver.get(self.WHATSAPP_URL)
         try:
             ### Extraindo QRCODE para realização de login
             extrair_qrcode = self.wait_for_element((By.XPATH, self.CLASSE_QRCODE))
             valor = extrair_qrcode.screenshot_as_png
-            print(self.ARQUIVO_QRCODE)
-            with open(self.ARQUIVO_QRCODE, "wb") as file:
+            print(ARQUIVO_QRCODE)
+            with open(ARQUIVO_QRCODE, "wb") as file:
                 file.write(valor)
             return True
         except:
@@ -130,12 +140,13 @@ class ConexaoZap():
         write_msg_group = self.write_text(texto)
         return write_msg_group
 
-    @staticmethod
-    def initializer_driver():
+    @classmethod
+    def initializer_driver(cls,profile=None):
         option = Options()
         option.add_argument('-headless')
         option.add_argument("-profile")
-        profile = os.path.join(os.getcwd(),'app','profiles')
+        if profile is None:
+            profile = os.path.join(os.getcwd(),'app','profiles','default')
         option.add_argument(profile)
         if plataforma == "windows":
             servico =  FirefoxService(GeckoDriverManager().install())
@@ -148,6 +159,19 @@ class ConexaoZap():
         else:
             raise OSError("Sistema operacional não suportado para inicializar o driver.")
         
+    def check_fila(self,fila):
+        print('checando fila')
+        while True:
+            print('checando fila')
+            if len(fila) > 0:
+                tipo,destino,payload = fila[1]
+                print(f'''este é o tipo {tipo},
+                    este é o destino {destino},
+                    este é o payload {payload}''')
+            break
+        
+       
+                
 
 if __name__ == "__main__":
 
