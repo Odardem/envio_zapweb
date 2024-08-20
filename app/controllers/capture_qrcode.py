@@ -6,8 +6,6 @@ from selenium.webdriver.common.by import By
 from selenium.webdriver.support.wait import WebDriverWait
 from selenium.common.exceptions import NoSuchElementException
 from selenium.webdriver.support import expected_conditions as EC
-from collections import deque
-from threading import Thread
 import os
 import platform
 from .token import *
@@ -27,9 +25,6 @@ class ConexaoZap():
     SEND_ARCHIVE = '//span[@*="send"]'
     TIME_MAX_WAIT = 30
     
-    fila = deque()
-
-     
     def __init__(self, user, driver=None):
         if driver is not None:
             self.driver = driver
