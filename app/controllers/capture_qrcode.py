@@ -31,8 +31,6 @@ class ConexaoZap():
         self.user = user
         self.driver = self.initializer_driver(self.user) 
         self.driver.get(self.WHATSAPP_URL)
-        #paralelismo = Thread(target=self.check_fila(self.fila))
-        #paralelismo.start()
     
     def wait_for_element(self, selector,max_time=None):
         if max_time is None:
