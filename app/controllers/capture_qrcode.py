@@ -9,24 +9,27 @@ from selenium.webdriver.support import expected_conditions as EC
 import os
 import platform
 from .token import *
+from time import sleep
 
 plataforma = platform.system().lower()
 
-os.environ['GH_TOKEN'] = TOKEN
+#os.environ['GH_TOKEN'] = TOKEN
 
 class ConexaoZap():
     WHATSAPP_URL = r'https://web.whatsapp.com'
     CLASSE_QRCODE = "//canvas[@*='Scan me!']"
     CLASSE_SEND = '//button[@*="Enviar"]'
     CLASSE_TEXT_GROUP = '//div[@*="Digite uma mensagem"]'
+    CLASSE_ATTACH_MENU = '//div[@*="Anexar"]'
+    ATTACH_ARCHIVE = '//input[@*="file"]'
+    SEND_ARCHIVE = '//span[@*="send"]'
     TIME_MAX_WAIT = 30
-    ARQUIVO_QRCODE =  os.path.join(os.getcwd(),'app','static','img','qrcode.png')
     
-     
-    def __init__(self, driver=None):
+    def __init__(self, user, driver=None):
         if driver is not None:
             self.driver = driver
-        self.driver = self.initializer_driver() 
+        self.user = user
+        self.driver = self.initializer_driver(self.user) 
         self.driver.get(self.WHATSAPP_URL)
     
     def wait_for_element(self, selector,max_time=None):
@@ -48,6 +51,7 @@ class ConexaoZap():
         return WebDriverWait(self.driver, max_time).until(
             EC.element_to_be_clickable(selector)
         )
+    
     def write_text(self,texto):
         ENTER = '\uE007'    # Codigo referente ao enter do teclado
         DELETE = '\uE017'
@@ -65,15 +69,51 @@ class ConexaoZap():
             return True                       
         except:
             return False
+        
+    def send_archive_numero(self,file,numero):
+        try:
+            url = fr'{self.WHATSAPP_URL}/send?phone={numero}'
+            self.driver.get(url)
+            menu_input_archive = self.wait_for_clickable_element((By.XPATH,self.CLASSE_ATTACH_MENU))
+            sleep(5)
+            menu_input_archive.click()
+            input_archive = self.wait_for_element((By.XPATH,self.ATTACH_ARCHIVE))
+            input_archive.send_keys(file)
+            send_button = self.wait_for_clickable_element((By.XPATH, self.SEND_ARCHIVE))
+            send_button.click()
+            return True
+        except Exception as err:
+            print(f'Deu erro {err}')
+            return False
     
-    def connect_whatsapp(self):
+    def send_archive_group(self,file,id_grupo):
+        try:
+            url = fr'{self.WHATSAPP_URL}/accept?code={id_grupo}'
+            self.driver.get(url)
+            menu_input_archive = self.wait_for_clickable_element((By.XPATH,self.CLASSE_ATTACH_MENU))
+            sleep(5)
+            menu_input_archive.click()
+            input_archive = self.wait_for_element((By.XPATH,self.ATTACH_ARCHIVE))
+            input_archive.send_keys(file)
+            send_button = self.wait_for_clickable_element((By.XPATH, self.SEND_ARCHIVE))
+            send_button.click()
+            return True
+        except Exception as err:
+            print(f'Deu erro {err}')
+            return False
+
+    def connect_whatsapp(self, archive=None):
+        if archive is None:
+            ARQUIVO_QRCODE =  os.path.join(os.getcwd(),'app','static','img','qrcode.png')
+        else:
+            ARQUIVO_QRCODE =  os.path.join(os.getcwd(),'app','static','img',archive,'qrcode.png')
         self.driver.get(self.WHATSAPP_URL)
         try:
             ### Extraindo QRCODE para realização de login
             extrair_qrcode = self.wait_for_element((By.XPATH, self.CLASSE_QRCODE))
             valor = extrair_qrcode.screenshot_as_png
-            print(self.ARQUIVO_QRCODE)
-            with open(self.ARQUIVO_QRCODE, "wb") as file:
+            print(ARQUIVO_QRCODE)
+            with open(ARQUIVO_QRCODE, "wb") as file:
                 file.write(valor)
             return True
         except:
@@ -93,12 +133,13 @@ class ConexaoZap():
         write_msg_group = self.write_text(texto)
         return write_msg_group
 
-    @staticmethod
-    def initializer_driver():
+    @classmethod
+    def initializer_driver(cls,profile=None):
         option = Options()
         option.add_argument('-headless')
         option.add_argument("-profile")
-        profile = os.path.join(os.getcwd(),'app','profiles')
+        if profile is None:
+            profile = os.path.join(os.getcwd(),'app','profiles','default')
         option.add_argument(profile)
         if plataforma == "windows":
             servico =  FirefoxService(GeckoDriverManager().install())
@@ -111,6 +152,19 @@ class ConexaoZap():
         else:
             raise OSError("Sistema operacional não suportado para inicializar o driver.")
         
+    def check_fila(self,fila):
+        print('checando fila')
+        while True:
+            print('checando fila')
+            if len(fila) > 0:
+                tipo,destino,payload = fila[1]
+                print(f'''este é o tipo {tipo},
+                    este é o destino {destino},
+                    este é o payload {payload}''')
+            break
+        
+       
+                
 
 if __name__ == "__main__":
 
