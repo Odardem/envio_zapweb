@@ -17,16 +17,13 @@ plataforma = platform.system().lower()
 
 class ConexaoZap():
     WHATSAPP_URL = r'https://web.whatsapp.com'
-    CLASSE_QRCODE = '//canvas[contains(@aria-label,"Scan ")]'
-    #CLASSE_QRCODE = 'canvas[*="Scan "]'
-    #CLASSE_QRCODE = '//canvas[@*="Scan this QR code to link a device!"]'
+    CLASSE_QRCODE = "//canvas[@*='Scan me!']"
     CLASSE_SEND = '//button[@*="Enviar"]'
     CLASSE_TEXT_GROUP = '//div[@*="Digite uma mensagem"]'
     CLASSE_ATTACH_MENU = '//div[@*="Anexar"]'
     ATTACH_ARCHIVE = '//input[@*="file"]'
     SEND_ARCHIVE = '//span[@*="send"]'
     TIME_MAX_WAIT = 30
-    CLASS_CHATS = '//div[@*="Chats"]'
     
     def __init__(self, user, driver=None):
         if driver is not None:
@@ -114,7 +111,6 @@ class ConexaoZap():
         try:
             ### Extraindo QRCODE para realização de login
             extrair_qrcode = self.wait_for_element((By.XPATH, self.CLASSE_QRCODE))
-            print(extrair_qrcode)
             valor = extrair_qrcode.screenshot_as_png
             print(ARQUIVO_QRCODE)
             with open(ARQUIVO_QRCODE, "wb") as file:
@@ -155,15 +151,6 @@ class ConexaoZap():
             return driver
         else:
             raise OSError("Sistema operacional não suportado para inicializar o driver.")
-        
-    def test_connection(self):
-        try: 
-            sleep(30)
-            self.wait_for_element((By.XPATH, self.CLASSE_CHAT))
-            self.driver.close()
-            return True
-        except Exception as err:
-            return False
         
     def check_fila(self,fila):
         print('checando fila')

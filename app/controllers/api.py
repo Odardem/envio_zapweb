@@ -14,11 +14,10 @@ IMAGE = os.path.join(os.getcwd(),'app','static','img')
 app.config['UPLOAD_FOLDER'] = UPLOADS_FOLDER
 app.config.update()
 
-
 @app.route("/login/<user>")
 def login(user):
+    global driver
     print('iniciando processo')
-    
     try:
         if not os.path.exists(os.path.join(UPLOADS_FOLDER,user)) and not os.path.exists(os.path.join(PROFILES,user)):
             print("Criando Diretorios")
@@ -36,9 +35,12 @@ def login(user):
     if driver.connect_whatsapp(user):
        print('check ok')
        #shutil.move(os.path.join(os.getcwd(),'app','profiles','default'), profile)
-       return render_template('index.html', image = user_image)
+       return render_template('index.html', image = user_image), export_driver(profile)
     else:
         return "erro"
+
+def export_driver(user):
+    ...
 
 @app.route("/")
 def index():
@@ -113,8 +115,8 @@ def envio_arquivo(usuario):
     mensagem = json.loads(request_mensagem)
     file = request.files['file']
     file_name = secure_filename(file.filename)
-    file.save(os.path.join(app.config['UPLOAD_FOLDER'],file_name))
-    arquivo = os.path.join(app.config['UPLOAD_FOLDER'],file_name)
+    file.save(os.path.join(app.config['UPLOAD_FOLDER'],usuario,file_name))
+    arquivo = os.path.join(app.config['UPLOAD_FOLDER'],usuario,file_name)
     #print(f'Enviando arquivo {file_name} para o numero: {numero}')
     if file.filename == '':
         return 'Sem arquivo'
