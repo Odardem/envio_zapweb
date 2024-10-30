@@ -35,36 +35,70 @@ message_queue.join()  # Espera até que todas as mensagens sejam processadas
 print("Todas as mensagens foram processadas.")'''
 import threading
 import queue
-import time
+from time import sleep
 
-class MessageQueue:
+class FilaEnvio():
     def __init__(self):
         self.message_queue = queue.Queue()
+        self.consumer_started = False
 
     def produce(self, message):
-        """Adiciona uma mensagem à fila."""
-        print(f"Enviando: {message}")
-        self.message_queue.put(message)
+       
+        try:
+            self.message_queue.put(message)
+            return True
+        except Exception as err:
+            print(f'ocorreu o erro: {err}')
+            return False
 
-    def consume(self):
-        """Processa mensagens da fila."""
+
+    def consume(self,driver):
         while True:
             message = self.message_queue.get()
             print(f"Processando: {message}")
-            time.sleep(2)  # Simula o tempo de processamento
-            self.message_queue.task_done()
+            if 'numero' in message.keys() and "message" in message.keys():
+                numero = message['numero']
+                text = message['message']
+                while True:     
+                    if driver.envio_mesagem(numero,text):
+                        print(f'Mensagem para o numero: {numero} ### Enviado com sucesso ###')
+                        break                        
+                    else:
+                        print(f'Mensagem para o numero: {numero} ##### Falhou #####')
+                    sleep(5)
+                               
+            elif 'grupo' in message.keys() and "message" in message.keys():
+                grupo = message['grupo']
+                text = message['message']
+                while True:
+                    if driver.envio_mesagem_grupo(grupo,text):
+                        print(f'Mensagem para o grupo: {grupo} ### Enviado com sucesso ###')
+                        break
+                    else:
+                        print(f'Mensagem para o grupo: {grupo} ##### Falhou #####')
+                    sleep(5)
 
+    '''
     def start_producer(self, messages):
-        """Inicia o produtor para adicionar várias mensagens à fila."""
         for message in messages:
             self.produce(message)
             time.sleep(1)  # Simula o tempo entre mensagens
+    '''
 
-    def start_consumer_thread(self):
+    def start_consumer_thread(self,driver):
+        if not self.consumer_started:
+            consumer_thread = threading.Thread(target=self.consume, args=(driver,), daemon=True)
+            consumer_thread.start()
+            self.consumer_started = True
+            print("Consumidor iniciado.")
+        else:
+            print("Consumidor já foi iniciado.")
+        '''
         """Inicia o consumidor em uma thread separada."""
-        consumer_thread = threading.Thread(target=self.consume, daemon=True)
+        consumer_thread = threading.Thread(target=self.consume(driver), daemon=True)
         consumer_thread.start()
         return consumer_thread
+        '''
 
 # Exemplo de uso da classe
 if __name__ == "__main__":
