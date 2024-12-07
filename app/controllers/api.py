@@ -6,6 +6,8 @@ import shutil
 import os
 import json
 
+from .fila_memoria import FilaEnvio
+
 
 UPLOADS_FOLDER = os.path.join(os.getcwd(),'app','uploads')
 PROFILES = os.path.join(os.getcwd(),'app','profiles')
@@ -14,11 +16,15 @@ IMAGE = os.path.join(os.getcwd(),'app','static','img')
 app.config['UPLOAD_FOLDER'] = UPLOADS_FOLDER
 app.config.update()
 
+#driver = None
+fila = FilaEnvio()
+#fila.start_consumer_thread()
+
 
 @app.route("/login/<user>")
 def login(user):
+    global driver
     print('iniciando processo')
-    
     try:
         if not os.path.exists(os.path.join(UPLOADS_FOLDER,user)) and not os.path.exists(os.path.join(PROFILES,user)):
             print("Criando Diretorios")
@@ -29,16 +35,21 @@ def login(user):
         profile = os.path.join(PROFILES,user)
         user_image = f'{user}/qrcode.png'
         driver = ConexaoZap(user=profile)
+        fila.start_consumer_thread(driver)
     except Exception as err:
         print(err)
         return "Ocorreu um erro tente novamente"
 
     if driver.connect_whatsapp(user):
        print('check ok')
+       
        #shutil.move(os.path.join(os.getcwd(),'app','profiles','default'), profile)
-       return render_template('index.html', image = user_image)
+       return render_template('index.html', image = user_image), export_driver(profile)
     else:
         return "erro"
+
+def export_driver(user):
+    ...
 
 @app.route("/")
 def index():
@@ -74,7 +85,12 @@ def send_message_group(id_grupo,texto):
     
 @app.route("/envio/json/<usuario>",methods=['POST'])
 def envio_json(usuario):
+    #fila.start_consumer_thread(driver)
     request_mensagem = request.get_json()
+    if fila.produce(request_mensagem):
+        return 'Mensagem adicionada na fila'
+    else:
+        return 'Ocorreu um erro'
     if 'numero' in request_mensagem.keys() and "message" in request_mensagem.keys():
         numero = request_mensagem['numero']
         text = request_mensagem['message']
@@ -91,6 +107,8 @@ def envio_json(usuario):
     
     elif 'grupo' in request_mensagem.keys() and "message" in request_mensagem.keys():
         grupo = request_mensagem['grupo']
+        fila.produce(request_mensagem)
+
         text = request_mensagem['message']
         '''driver.fila.appendleft(['grupo',grupo,text])
         print(f'Envio de mensagem para o grupo: {grupo}, Adicionado a Fila')
@@ -113,8 +131,8 @@ def envio_arquivo(usuario):
     mensagem = json.loads(request_mensagem)
     file = request.files['file']
     file_name = secure_filename(file.filename)
-    file.save(os.path.join(app.config['UPLOAD_FOLDER'],file_name))
-    arquivo = os.path.join(app.config['UPLOAD_FOLDER'],file_name)
+    file.save(os.path.join(app.config['UPLOAD_FOLDER'],usuario,file_name))
+    arquivo = os.path.join(app.config['UPLOAD_FOLDER'],usuario,file_name)
     #print(f'Enviando arquivo {file_name} para o numero: {numero}')
     if file.filename == '':
         return 'Sem arquivo'
