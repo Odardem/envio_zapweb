@@ -54,6 +54,7 @@ class FilaEnvio():
 
     def consume(self,driver):
         while True:
+            contador = 0
             message = self.message_queue.get()
             print(f"Processando: {message}")
             if 'numero' in message.keys() and "message" in message.keys():
@@ -65,6 +66,12 @@ class FilaEnvio():
                         break                        
                     else:
                         print(f'Mensagem para o numero: {numero} ##### Falhou #####')
+                        if contador < 3:
+                            contador +=1
+                            sleep(5)
+                        else:
+                            print(f'Mensagem para o numero: {numero} ##### Falhou #####')
+                            break
                     sleep(5)
                                
             elif 'grupo' in message.keys() and "message" in message.keys():
@@ -76,6 +83,12 @@ class FilaEnvio():
                         break
                     else:
                         print(f'Mensagem para o grupo: {grupo} ##### Falhou #####')
+                        if contador < 3:
+                            contador +=1
+                            sleep(5)
+                        else:
+                            print(f'Mensagem para o grupo: {grupo} ##### Falhou #####')
+                            break
                     sleep(5)
 
     '''
