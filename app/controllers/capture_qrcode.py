@@ -8,7 +8,7 @@ from selenium.common.exceptions import NoSuchElementException
 from selenium.webdriver.support import expected_conditions as EC
 import os
 import platform
-from .token import *
+#from .token import *
 from time import sleep
 
 plataforma = platform.system().lower()
@@ -58,10 +58,12 @@ class ConexaoZap():
     def write_text(self,texto):
         ENTER = '\uE007'    # Codigo referente ao enter do teclado
         DELETE = '\uE017'
-        CONTROL = '\uE009'
+        CONTROL = '\uE051'
         try:
             ### Realizando loop para escrever letra a letra no zap
             text_input = self.wait_visible_element((By.XPATH, self.CLASSE_TEXT_GROUP))
+            text_input.send_keys(CONTROL + 'a')
+            text_input.send_keys(DELETE)
             for c in texto:
                 if len(c) > 1:
                     c = c.lower()
